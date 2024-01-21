@@ -4,49 +4,14 @@ import kotlin.math.abs
 
 typealias intfx = Int
 
-object TestBed {
-
+object Fx {
   @JvmStatic
   fun main(args: Array<String>) {
-    // TODO remove
-
-    val testOneHalf = toFx(1, 128u)
-    val testTwoQuarter = toFx(2, 64u)
-    val testOne = toFx(1)
-    val testHalf = toFx(0, 128u)
-    val testTwo = toFx(2)
-    val testThree = toFx(3)
-    val testThreeThreeQuarter = toFx(3, 192u)
-    val testFour = toFx(4)
-    val testFourHalf = toFx(4, 128u)
-    val testSix = toFx(6)
-    val testNine = toFx(9)
-
-    expect(25, subtractFx(testOneHalf, testHalf), testOne, "1.5 - .5")
-    expect(26, subtractFx(testOneHalf, testHalf), testOne,"1.5 - .5")
-    expect(27, addFx(testOneHalf, testHalf), testTwo,"1.5 + .5")
-    expect(28, addFx(testOneHalf, testOneHalf), testThree,"1.5 + 1.5")
-    expect(29, addFx(testTwoQuarter, testTwoQuarter), testFourHalf,"2.25 + 2.25")
-    expect(30, addFx(testTwoQuarter, testOneHalf), testThreeThreeQuarter,"2.25 + 1.5")
-    expect(31, multiplyFx(testOne, testOne), testOne,"1 x 1")
-    expect(32, multiplyFx(testOneHalf, testOneHalf), testTwoQuarter,"1.5 x 1.5")
-    expect(33, multiplyFx(testTwo, testTwo), testFour,"2 x 2")
-    expect(34, multiplyFx(testTwo, testThree), testSix,"2 x 3")
-    expect(35, multiplyFx(testThree, testThree), testNine,"3 x 3")
-    if (true) return
-    expect(36, divideFx(testOneHalf, testOne), testOneHalf,"1.5 / 1")
-    expect(37, divideFx(testFour, testTwo), testTwo,"4 / 2")
-    expect(38, sqrtFx(testNine), testThree,"sqrt 9")
-    expect(39, sqrtFx(testFour), testTwo,"sqrt 4")
-    println(toString(sqrtFx(testTwo)))
   }
+}
 
-  fun expect(line: Int, calculated: intfx, expected: intfx, message: String = "") {
-    if (calculated != expected) println("$line: $message, -- expected ${toString(expected)} but was ${toString(calculated)}")
-  }
-
-  fun toString(value: intfx): String {
-    return "${getWholePart(value)}:${(getFractionalPart(value).toFloat() / 256 * 1000).toUInt()}"
+  fun intfx.fxToString(): String {
+    return "${getWholePart(this)}:${(getFractionalPart(this).toFloat() / 256 * 1000).toUInt()}"
   }
 
   fun toFx(wholePart: Byte, fractionalPart: UByte): intfx {
@@ -124,21 +89,21 @@ object TestBed {
   //   return wholePart or fractionalPart // Combine the whole and fractional parts into a short
   // }
 
-  fun multiplyWholeAnd(whole: Byte, frac: UByte): Short {
+  fun multiplyWholeAndFraction(whole: Byte, frac: UByte): Short {
     // Multiply as integers, preserving precision
     val product = whole * frac.toShort()
 
-    // Extract whole and fractional parts using shifts
-    val wholeResult = (product shr 8).toByte()  // Shift right 8 bits for division by 256
-    val fracResult = (product and 0xFF).toUByte()  // Mask lower 8 bits for fractional part
+    // // Extract whole and fractional parts using shifts
+    // val wholeResult = (product shr 8).toByte()  // Shift right 8 bits for division by 256
+    // val fracResult = (product and 0xFF).toUByte()  // Mask lower 8 bits for fractional part
+    //
+    // // Round fractional part if necessary
+    // if (fracResult >= 128) {
+    //   wholeResult++
+    //   fracResult = 0
+    // }
 
-    // Round fractional part if necessary
-    if (fracResult >= 128) {
-      wholeResult++
-      fracResult = 0
-    }
-
-    return Pair(wholeResult, fracResult)
+    return product.toShort() // TODO not really right yet
   }
 
   fun divideFx(a: intfx, b: intfx): intfx {
@@ -219,5 +184,3 @@ object TestBed {
     // // TODO: compute square root of x
     // return 0
   }
-
-}
