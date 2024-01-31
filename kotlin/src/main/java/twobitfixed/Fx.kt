@@ -96,48 +96,25 @@ fun sqrtFx(n: intfx): intfx {
 
   // Iterate using the Babylonian method to refine the guess
   for (i in 1..15) {
-    val newGuess = (guess + n / guess) / 2
-    println("sqrt raw n $n guess $guess newG $newGuess")
+    val newGuess = (guess + n / guess) shr 1
+    // println(" sqrt raw n $n guess $guess newG $newGuess")
     if (newGuess == guess) {
       break // Converged to a solution
     }
     guess = newGuess
   }
 
-  // TODO gets to the correct value for raw n but I need to figure out how to make
-  // TODO that back to an intfx... I'm guessing some shifting
+  // guess at this point is for the whole value, and is somehow 16 times the expected value...
+  // it's not wrong but it isn't what we're looking for.
 
   // Extract integer and decimal parts of the approximation
-  val quotient = guess
-  val decimalApproximation = ((n - guess * guess) shl 8) / guess and 0xFF
+  val quotient = guess shr 4 // TODO why is div by 16 needed?
+  // Grab the remainder for the decimal value.
+  val remainder = guess % 16
+  val decimalApproximation = remainder shl 4 // TODO this means we can only hit 1/16 accuracy
 
-  println("sqrt ${n.fxToString()} guess $guess frac $decimalApproximation")
+  // ai orig: val decimalApproximation = ((n - guess * guess) shl 8) / guess and 0xFF
+
+  // println("sqrt ${n.fxToString()} quo $quotient frac $decimalApproximation")
   return toFx(quotient.toByte(), decimalApproximation.toUByte())
-  // TODO not correct yet
-  // // Extract the integer part of the fixed-point number
-  // val wholePart = getWholePart(x).toInt()
-  //
-  // // Extract the fractional part of the fixed-point number
-  // val fractionalPart = getFractionalPart(x).toInt()
-  //
-  // // Initialize the guess for the square root
-  // var guess = toFx(wholePart.toByte(), 0u)
-  //
-  // // Iterate until the guess is close enough to the actual square root
-  // for (i in 0..9) {
-  //   // Calculate the square of the guess
-  //   val square = multiplyFx(guess, guess)
-  //
-  //   // Check if the square is close enough to the fixed-point number
-  //   if (abs(subtractFx(square, x)) < 1) {
-  //     break
-  //   }
-  //
-  //   // Refine the guess by averaging the guess and the quotient of the
-  //   // fixed-point number divided by the guess
-  //   if (guess == 0) continue
-  //   guess = divideFx(addFx(guess, x), guess)
-  // }
-  //
-  // return guess
 }
