@@ -94,7 +94,7 @@ class FxTest {
     expect(multiplyFx(valTwo, valTwo), valFour, "2 x 2")
     expect(multiplyFx(valTwo, valThree), valSix, "2 x 3")
     expect(multiplyFx(valThree, valThree), valNine, "3 x 3")
-    expect(multiplyFx(val120, valTwo256ths), val240_256ths,"120 x 2/256")
+    expect(multiplyFx(val120, valTwo256ths), val240_256ths, "120 x 2/256")
   }
 
   // @Test
@@ -142,28 +142,25 @@ class FxTest {
 
   @Test
   fun test_sqrtFx() {
-    sqrtRoundtrip(valOneAndHalf)
-    sqrtRoundtrip(valOne)
-    sqrtRoundtrip(valTwo)
-    sqrtRoundtrip(toFx(2, 128u))
-    sqrtRoundtrip(valThree)
-    sqrtRoundtrip(valFour)
-    sqrtRoundtrip(toFx(11))
-    sqrtRoundtrip(toFx(7, 220u))
-    println(sqrtFx(valTwo).fxToString())
+    // Try all possible positive values
+    for (i in 1..127) {
+      for (fr in 0u..255u) {
+        sqrtRoundtrip(toFx(i.toByte(), fr.toUByte()))
+      }
+    }
   }
 
   private fun sqrtRoundtrip(startingValue: intfx) {
     val square = multiplyFx(startingValue, startingValue)
-    expect(sqrtFx(square), startingValue, "sqroot(${startingValue.fxToString()}^2)")
+    val calculated = sqrtFx(square)
+    val message = "sqrt of ${startingValue.fxToString()}^2 =[${square.fxToString()}]"
+    expect(calculated, startingValue, message)
   }
 
-  private fun expect(calculated: intfx, expected: intfx, message: String) {
-    println("$message, -- expected ${expected.fxToString()} but was ${calculated.fxToString()}")
-    // assertEquals(
-    //   "$message, -- expected ${expected.fxToString()} but was ${calculated.fxToString()}",
-    //   expected,
-    //   calculated
-    // )
-  }
+  private fun expect(calculated: intfx, expected: intfx, message: String) =
+    assertEquals(
+      "$message, -- expected ${expected.fxToString()} but was ${calculated.fxToString()}",
+      expected,
+      calculated,
+    )
 }

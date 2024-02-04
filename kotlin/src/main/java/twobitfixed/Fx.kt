@@ -1,7 +1,5 @@
 package twobitfixed
 
-import kotlin.math.abs
-
 typealias intfx = Int
 
 object Fx {
@@ -12,7 +10,8 @@ object Fx {
 
 fun intfx.fxToString(): String {
   val fractionalPart = getFractionalPart(this)
-  return "${getWholePart(this)}:$fractionalPart(.${(fractionalPart.toFloat() / 256 * 1000).toUInt()})"
+  val zFilled = "%03d".format((fractionalPart.toFloat() / 256 * 1000).toInt())
+  return "${getWholePart(this)}:$fractionalPart(.$zFilled)"
 }
 
 fun intfx.fxToFloat(): Float {
@@ -32,89 +31,51 @@ fun getFractionalPart(fixedPointNumber: intfx): UByte {
   return (fixedPointNumber and 0xFF).toUByte()
 }
 
-fun addFx(a: intfx, b: intfx): intfx {
-  return a + b
-}
+fun addFx(a: intfx, b: intfx): intfx = a + b
 
-fun subtractFx(a: intfx, b: intfx): intfx {
-  return a - b
-}
+fun subtractFx(a: intfx, b: intfx): intfx = a - b
 
-fun multiplyFx(a: intfx, b: intfx): intfx {
-  return ((a * b) shr 8).toInt()
-  // val wholeA = getWholePart(a)
-  // val fracA = getFractionalPart(a)
-  // val wholeB = getWholePart(b)
-  // val fracB = getFractionalPart(b)
-  // println("wA $wholeA fA $fracA wB $wholeB fB $fracB")
-  //
-  // // Sign-extend whole parts to 32 bits for accurate multiplication
-  // val signedWholeA = wholeA.toLong()
-  // val signedWholeB = wholeB.toLong()
-  //
-  // // Perform multiplications with intermediate results using 64-bit integers
-  // val product1 = signedWholeA * signedWholeB
-  // val product2 = multiplyWholeAndFraction(wholeA, fracB)
-  // val product3 = multiplyWholeAndFraction(wholeB, fracA)
-  // val product4 = multiplyFractions(fracA, fracB)
-  //
-  // val combined = (product1 shl 8) + product2 + product3 + product4
-  // println("p1 $product1 p2 $product2 p3 $product3 p4 $product4 comb $combined altcomb $altcomb")
-}
-
-// fun multiplyWholeAndFraction(whole: Byte, frac: UByte): intfx =
-//   whole * frac.toShort()
-//
-// fun multiplyFractions(fracA: UByte, fracB: UByte): intfx {
-//   // Convert bytes to unsigned integers for accurate multiplication
-//   val a = fracA.toShort()
-//   val b = fracB.toShort()
-//
-//   return (a * b shr 8).toInt()
-// }
+fun multiplyFx(a: intfx, b: intfx): intfx = (a * b) shr 8
 
 fun divideFx(a: intfx, b: intfx): intfx {
-  // println("div a $a b $b intDiv ${a/b} intRem ${a%b}")
-
   // Fractional remainder explanation, as provided by AI:
   // 1. shl 8 performs a left bit shift by 8 positions, effectively multiplying the remainder by 256.
   // 2. / b performs integer division to scale the remainder down.
   // 3. and 0xFF masks the lower 8 bits, ensuring the result is within the byte range (0-255).
   val fractionalPart = ((((a % b) shl 8) / b) and 0xFF).toUByte()
-
   return toFx((a / b).toByte(), fractionalPart)
 }
 
-fun sqrtFx(n: intfx): intfx {
+fun sqrtFx(raw: intfx): intfx {
   // Handle negative input
-  if (n < 0) {
+  if (raw < 0) {
     throw IllegalArgumentException("Square root of negative numbers is not defined")
   }
 
+  // shift left by a byte to effectively eliminate the fractional part
+  // add 1/256th in to help deal with an off-by-one error
+  val n = (raw + 1) shl 8
+
   // Initial guess for the square root
-  var guess = 1
+  var guess = 256
 
   // Iterate using the Babylonian method to refine the guess
+  // Iterate up to 15 times to find a guess
   for (i in 1..15) {
     val newGuess = (guess + n / guess) shr 1
-    // println(" sqrt raw n $n guess $guess newG $newGuess")
     if (newGuess == guess) {
       break // Converged to a solution
     }
     guess = newGuess
   }
 
-  // guess at this point is for the whole value, and is somehow 16 times the expected value...
-  // it's not wrong but it isn't what we're looking for.
-
   // Extract integer and decimal parts of the approximation
-  val quotient = guess shr 4 // TODO why is div by 16 needed?
+  // drop the bottom 8 bits of the guess to get back to scrap the extra byte we added above
+  val whole = guess shr 8
   // Grab the remainder for the decimal value.
-  val remainder = guess % 16
-  val decimalApproximation = remainder shl 4 // TODO this means we can only hit 1/16 accuracy
+  val fractional = guess % 256
 
-  // ai orig: val decimalApproximation = ((n - guess * guess) shl 8) / guess and 0xFF
+  // println("sqrt of ${raw.fxToString()} = whol $whole frac $fractional")
 
-  // println("sqrt ${n.fxToString()} quo $quotient frac $decimalApproximation")
-  return toFx(quotient.toByte(), decimalApproximation.toUByte())
+  return toFx(whole.toByte(), fractional.toUByte())
 }
