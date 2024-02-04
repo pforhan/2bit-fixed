@@ -49,7 +49,8 @@ fun divideFx(a: intfx, b: intfx): intfx {
 fun sqrtFx(raw: intfx): intfx {
   // Handle negative input
   if (raw < 0) {
-    throw IllegalArgumentException("Square root of negative numbers is not defined")
+    // This could be a throw but 0 is better for an embedded system.
+    return 0
   }
 
   // shift left by a byte to effectively eliminate the fractional part
