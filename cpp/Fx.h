@@ -28,7 +28,7 @@ intfx multiplyFx(intfx a, intfx b) {
 }
 
 intfx divideFx(intfx a, intfx b) {
-    uint8_t fractionalPart = static_cast<uint8_t>(((a % b) << 8) / b) & 0xFF;
+    uint8_t fractionalPart = static_cast<uint8_t>(((a % b) << 8) / b);
     return toFx(static_cast<int8_t>(a / b), fractionalPart);
 }
 

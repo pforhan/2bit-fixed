@@ -38,11 +38,7 @@ fun subtractFx(a: intfx, b: intfx): intfx = a - b
 fun multiplyFx(a: intfx, b: intfx): intfx = (a * b) shr 8
 
 fun divideFx(a: intfx, b: intfx): intfx {
-  // Fractional remainder explanation, as provided by AI:
-  // 1. shl 8 performs a left bit shift by 8 positions, effectively multiplying the remainder by 256.
-  // 2. / b performs integer division to scale the remainder down.
-  // 3. and 0xFF masks the lower 8 bits, ensuring the result is within the byte range (0-255).
-  val fractionalPart = ((((a % b) shl 8) / b) and 0xFF).toUByte()
+  val fractionalPart = (((a % b) shl 8) / b).toUByte()
   return toFx((a / b).toByte(), fractionalPart)
 }
 
